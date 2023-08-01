@@ -52,6 +52,35 @@ export default function Draw() {
     }
   }
 
+  useEffect(() => {
+    // 禁用雙指放大
+    document.documentElement.addEventListener('touchstart', function (event) {
+      if (event.touches.length > 1) {
+        event.preventDefault()
+      }
+    }, {passive: false})
+
+    // 禁用雙擊放大
+    let lastTouchEnd = 0
+    document.documentElement.addEventListener('touchend', function (event) {
+      const now = Date.now()
+      if (now - lastTouchEnd <= 300) {
+        event?.preventDefault()
+      }
+      lastTouchEnd = now
+    }, {passive: false})
+
+    // 禁止鼠標縮放
+    function handleWheelEvent(e: { ctrlKey: unknown; preventDefault: () => void }) {
+      if (e.ctrlKey) {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('wheel', handleWheelEvent, {passive: false})
+    return () => window.removeEventListener('wheel', handleWheelEvent)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   return (
     <div className="w-full flex justify-center flex-col items-center">
       <button
