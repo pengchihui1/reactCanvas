@@ -1,0 +1,6 @@
+public/images/**/*.png filter=lfs diff=lfs merge=lfs -text
+public/images/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+public/images/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
+public/images/**/*.mp3 filter=lfs diff=lfs merge=lfs -text
+public/models/**/*.json filter=lfs diff=lfs merge=lfs -text
+public/models/**/*.bin filter=lfs diff=lfs merge=lfs -text
