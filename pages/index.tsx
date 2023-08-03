@@ -1,47 +1,75 @@
-import {useState, TouchEvent, useRef, useEffect} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 
-type Point = {
+interface Point {
   x: number
   y: number
 }
 
-// React.MutableRefObject<HTMLCanvasElement>
-export default function Draw() {
+const DrawBoard: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [isDrawing, setIsDrawing] = useState<boolean>(false)
+  const [lastPoint, setLastPoint] = useState<Point | null>(null)
 
-  const [isDrawing, setIsDrawing] = useState(false)
-  const [touchPosition, setTouchPosition] = useState<Point | null>(null)
-
-  function startTouch(event: TouchEvent) {
-    const {clientX, clientY} = event.touches[0]
-    const {left, top} = canvasRef.current?.getBoundingClientRect() || {left: 0, top: 0}
-    const offsetX = clientX - left
-    const offsetY = clientY - top
-    setTouchPosition({x: offsetX, y: offsetY})
-    setIsDrawing(true)
-  }
-
-  function endTouch() {
-    setIsDrawing(false)
-  }
-
-  function moveTouch(event: TouchEvent) {
-    if (isDrawing) {
-      const {clientX, clientY} = event.touches[0]
-      if (clientX === null || clientY === null) return
-      const {left, top} = canvasRef.current?.getBoundingClientRect() || {left: 0, top: 0}
-      const offsetX = clientX - left
-      const offsetY = clientY - top
-      const canvas = canvasRef.current
-      const context = canvas?.getContext('2d')
-      if (context && touchPosition) {
-        context.beginPath()
-        context.moveTo(touchPosition?.x, touchPosition?.y)
-        context.lineTo(offsetX, offsetY)
-        context.stroke()
-        setTouchPosition({x: offsetX, y: offsetY})
-      }
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
     }
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return
+    }
+
+    ctx.strokeStyle = '#000'
+    ctx.lineWidth = 2
+  }, [])
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true)
+    const point = getTouchPoint(e)
+    setLastPoint(point)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || !lastPoint) {
+      return
+    }
+
+    const point = getTouchPoint(e)
+    drawLin(lastPoint, point)
+    setLastPoint(point)
+  }
+
+  const handleTouchEnd = () => {
+    setIsDrawing(false)
+    setLastPoint(null)
+  }
+
+  const getTouchPoint = (e: React.TouchEvent<HTMLCanvasElement>): Point => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const {left, top} = canvasRef.current!.getBoundingClientRect()
+    const {clientX, clientY} = e.touches[0]
+    const x = clientX - left
+    const y = clientY - top
+    return {x, y}
+  }
+
+  const drawLin = (start: Point, end: Point) => {
+    const canvas = canvasRef.current
+    if (!canvas) {
+      return
+    }
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return
+    }
+
+    ctx.beginPath()
+    ctx.moveTo(start.x, start.y)
+    ctx.lineTo(end.x, end.y)
+    ctx.stroke()
   }
 
   function clearCanvas() {
@@ -52,36 +80,8 @@ export default function Draw() {
     }
   }
 
-  useEffect(() => {
-    // 禁用雙指放大
-    document.documentElement.addEventListener('touchstart', function (event) {
-      if (event.touches.length > 1) {
-        event.preventDefault()
-      }
-    }, {passive: false})
-
-    // 禁用雙擊放大
-    let lastTouchEnd = 0
-    document.documentElement.addEventListener('touchend', function (event) {
-      const now = Date.now()
-      if (now - lastTouchEnd <= 300) {
-        event?.preventDefault()
-      }
-      lastTouchEnd = now
-    }, {passive: false})
-
-    // 禁止鼠標縮放
-    function handleWheelEvent(e: { ctrlKey: unknown; preventDefault: () => void }) {
-      if (e.ctrlKey) {
-        e.preventDefault()
-      }
-    }
-    window.addEventListener('wheel', handleWheelEvent, {passive: false})
-    return () => window.removeEventListener('wheel', handleWheelEvent)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
   return (
+
     <div className="w-full flex justify-center flex-col items-center">
       <button
         onClick={clearCanvas}
@@ -89,9 +89,9 @@ export default function Draw() {
       >清楚绘画</button>
       <canvas
         ref={canvasRef}
-        onTouchStart={startTouch}
-        onTouchEnd={endTouch}
-        onTouchMove={moveTouch}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         width={1482}
         height={758}
         className="border-2 border-solid"
@@ -100,3 +100,4 @@ export default function Draw() {
   )
 }
 
+export default DrawBoard
