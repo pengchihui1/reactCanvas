@@ -1,4 +1,4 @@
-import {useState, TouchEvent, useRef} from 'react'
+import {useState, TouchEvent, useRef, useEffect} from 'react'
 
 type Point = {
   x: number
