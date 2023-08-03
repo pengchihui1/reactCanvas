@@ -87,6 +87,10 @@ const DrawBoard: React.FC = () => {
         onClick={clearCanvas}
         className="bg-red-400 font-normal m-2 p-2 rounded-lg"
       >清楚绘画</button>
+      <div>
+        <p>X: {lastPoint?.x}</p>
+        <p>Y: {lastPoint?.y}</p>
+      </div>
       <canvas
         ref={canvasRef}
         onTouchStart={handleTouchStart}
