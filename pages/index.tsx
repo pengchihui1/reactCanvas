@@ -10,6 +10,14 @@ const DrawBoard: React.FC = () => {
   const [isDrawing, setIsDrawing] = useState<boolean>(false)
   const [lastPoint, setLastPoint] = useState<Point | null>(null)
 
+  function clearCanvas() {
+    const canvas = canvasRef.current
+    const context = canvas?.getContext('2d')
+    if (canvas && context) {
+      context.clearRect(0, 0, canvas.width, canvas.height)
+    }
+  }
+
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) {
@@ -23,64 +31,66 @@ const DrawBoard: React.FC = () => {
 
     ctx.strokeStyle = '#000'
     ctx.lineWidth = 2
-  }, [])
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
-    setIsDrawing(true)
-    const point = getTouchPoint(e)
-    setLastPoint(point)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    e.preventDefault()
-    if (!isDrawing || !lastPoint) {
-      return
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault()
+      setIsDrawing(true)
+      const point = getTouchPoint(e)
+      setLastPoint(point)
     }
 
-    const point = getTouchPoint(e)
-    drawLin(lastPoint, point)
-    setLastPoint(point)
-  }
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault()
+      if (!isDrawing || !lastPoint) {
+        return
+      }
 
-  const handleTouchEnd = () => {
-    setIsDrawing(false)
-    setLastPoint(null)
-  }
-
-  const getTouchPoint = (e: React.TouchEvent<HTMLCanvasElement>): Point => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const {left, top} = canvasRef.current!.getBoundingClientRect()
-    const {clientX, clientY} = e.touches[0]
-    const x = clientX - left
-    const y = clientY - top
-    return {x, y}
-  }
-
-  const drawLin = (start: Point, end: Point) => {
-    const canvas = canvasRef.current
-    if (!canvas) {
-      return
+      const point = getTouchPoint(e)
+      drawLin(lastPoint, point)
+      setLastPoint(point)
     }
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
+    const handleTouchEnd = () => {
+      setIsDrawing(false)
+      setLastPoint(null)
     }
 
-    ctx.beginPath()
-    ctx.moveTo(start.x, start.y)
-    ctx.lineTo(end.x, end.y)
-    ctx.stroke()
-  }
-
-  function clearCanvas() {
-    const canvas = canvasRef.current
-    const context = canvas?.getContext('2d')
-    if (canvas && context) {
-      context.clearRect(0, 0, canvas.width, canvas.height)
+    const getTouchPoint = (e: TouchEvent) => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const {left, top} = canvasRef.current!.getBoundingClientRect()
+      const {clientX, clientY} = e.touches[0]
+      const x = clientX - left
+      const y = clientY - top
+      return {x, y}
     }
-  }
+
+    const drawLin = (start: Point, end: Point) => {
+      const canvas = canvasRef.current
+      if (!canvas) {
+        return
+      }
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        return
+      }
+
+      ctx.beginPath()
+      ctx.moveTo(start.x, start.y)
+      ctx.lineTo(end.x, end.y)
+      ctx.stroke()
+    }
+
+    canvas.addEventListener('touchstart', handleTouchStart, false)
+    canvas.addEventListener('touchmove', handleTouchMove, false)
+    canvas.addEventListener('touchend', handleTouchEnd, false)
+
+    return () => {
+      canvas.removeEventListener('touchstart', handleTouchStart, false)
+      canvas.removeEventListener('touchmove', handleTouchMove, false)
+      canvas.removeEventListener('touchend', handleTouchEnd, false)
+    }
+  }, [isDrawing, lastPoint])
 
   return (
 
@@ -95,9 +105,9 @@ const DrawBoard: React.FC = () => {
       </div>
       <canvas
         ref={canvasRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        // onTouchStart={handleTouchStart}
+        // onTouchMove={handleTouchMove}
+        // onTouchEnd={handleTouchEnd}
         width={1482}
         height={758}
         className="border-2 border-solid"
