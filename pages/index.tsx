@@ -26,12 +26,14 @@ const DrawBoard: React.FC = () => {
   }, [])
 
   const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
     setIsDrawing(true)
     const point = getTouchPoint(e)
     setLastPoint(point)
   }
 
   const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
     if (!isDrawing || !lastPoint) {
       return
     }
