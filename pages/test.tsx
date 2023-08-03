@@ -86,6 +86,10 @@ export default function Draw() {
         onClick={clearCanvas}
         className="bg-red-400 font-normal m-2 p-2 rounded-lg"
       >清楚绘画</button>
+      <div>
+        <p>X: {touchPosition?.x}</p>
+        <p>Y: {touchPosition?.y}</p>
+      </div>
       <canvas
         ref={canvasRef}
         onTouchStart={startTouch}
